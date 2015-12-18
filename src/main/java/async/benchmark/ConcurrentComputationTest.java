@@ -67,7 +67,7 @@ public class ConcurrentComputationTest {
 
     @Benchmark
     public static void completableFuture(Blackhole blackhole) throws ExecutionException, InterruptedException {
-        CompletableFuture.supplyAsync(Computation::findSumOfRoots, executor).thenAccept(blackhole::consume);
+        CompletableFuture.supplyAsync(Computation::compute, executor).thenAccept(blackhole::consume);
     }
 
     @Benchmark
@@ -77,9 +77,9 @@ public class ConcurrentComputationTest {
 
     @Benchmark
     public static void akkaFuture(Blackhole blackhole) throws ExecutionException, InterruptedException {
-        future(Computation::findSumOfRoots, executionContext).onComplete(new AbstractFunction1<Try<Double>, Object>() {
+        future(Computation::compute, executionContext).onComplete(new AbstractFunction1<Try<Integer>, Object>() {
             @Override
-            public Object apply(Try<Double> result) {
+            public Object apply(Try<Integer> result) {
                 blackhole.consume(result.get());
                 return null;
             }
@@ -88,11 +88,11 @@ public class ConcurrentComputationTest {
 
     @Benchmark
     public static void guavaListenableFuture(Blackhole blackhole) throws ExecutionException, InterruptedException {
-        final ListenableFuture<Double> listenableFuture = MoreExecutors.listeningDecorator(executor).submit(Computation::findSumOfRoots);
+        final ListenableFuture<Integer> listenableFuture = MoreExecutors.listeningDecorator(executor).submit(Computation::compute);
 
-        com.google.common.util.concurrent.Futures.addCallback(listenableFuture, new FutureCallback<Double>() {
+        com.google.common.util.concurrent.Futures.addCallback(listenableFuture, new FutureCallback<Integer>() {
             @Override
-            public void onSuccess(Double result) {
+            public void onSuccess(Integer result) {
                 blackhole.consume(result);
             }
 
@@ -105,9 +105,9 @@ public class ConcurrentComputationTest {
 
     @Benchmark
     public static void scalaFuture(Blackhole blackhole) throws ExecutionException, InterruptedException {
-        Future.apply(SCALA_ACTION, executionContext).onComplete(new AbstractFunction1<Try<Double>, Object>() {
+        Future.apply(SCALA_ACTION, executionContext).onComplete(new AbstractFunction1<Try<Integer>, Object>() {
             @Override
-            public Object apply(Try<Double> result) {
+            public Object apply(Try<Integer> result) {
                 blackhole.consume(result.get());
                 return null;
             }
@@ -116,9 +116,9 @@ public class ConcurrentComputationTest {
 
     @Benchmark
     public static void finagleFuture(Blackhole blackhole) throws ExecutionException, InterruptedException {
-        futurePool.apply(SCALA_ACTION).onSuccess(new AbstractFunction1<Double, BoxedUnit>() {
+        futurePool.apply(SCALA_ACTION).onSuccess(new AbstractFunction1<Integer, BoxedUnit>() {
             @Override
-            public BoxedUnit apply(Double result) {
+            public BoxedUnit apply(Integer result) {
                 blackhole.consume(result);
                 return null;
             }
