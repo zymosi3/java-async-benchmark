@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import static akka.dispatch.ExecutionContexts.fromExecutor;
 import static akka.dispatch.Futures.future;
-import static async.benchmark.Computation.findSumOfRoots;
+import static async.benchmark.Computation.compute;
 import static async.benchmark.Computation.SCALA_ACTION;
 import static async.benchmark.Computation.RX_ACTION;
 
@@ -50,13 +50,13 @@ public class DirectComputationTest {
 
     @Benchmark
     public static void iterativeComputation(Blackhole blackhole) {
-        double root = findSumOfRoots();
+        double root = compute();
         blackhole.consume(root);
     }
 
     @Benchmark
     public static void completableFuture(Blackhole blackhole) throws ExecutionException, InterruptedException {
-        CompletableFuture.supplyAsync(Computation::findSumOfRoots, EXECUTOR).thenAccept(blackhole::consume);
+        CompletableFuture.supplyAsync(Computation::compute, EXECUTOR).thenAccept(blackhole::consume);
     }
 
     @Benchmark
@@ -66,9 +66,9 @@ public class DirectComputationTest {
 
     @Benchmark
     public static void akkaFuture(Blackhole blackhole) throws ExecutionException, InterruptedException {
-        future(Computation::findSumOfRoots, EXECUTION_CONTEXT).onComplete(new AbstractFunction1<Try<Double>, Object>() {
+        future(Computation::compute, EXECUTION_CONTEXT).onComplete(new AbstractFunction1<Try<Integer>, Object>() {
             @Override
-            public Object apply(Try<Double> result) {
+            public Object apply(Try<Integer> result) {
                 blackhole.consume(result.get());
                 return null;
             }
@@ -77,11 +77,11 @@ public class DirectComputationTest {
 
     @Benchmark
     public static void guavaListenableFuture(Blackhole blackhole) throws ExecutionException, InterruptedException {
-        final ListenableFuture<Double> listenableFuture = MoreExecutors.listeningDecorator(EXECUTOR).submit(Computation::findSumOfRoots);
+        final ListenableFuture<Integer> listenableFuture = MoreExecutors.listeningDecorator(EXECUTOR).submit(Computation::compute);
 
-        com.google.common.util.concurrent.Futures.addCallback(listenableFuture, new FutureCallback<Double>() {
+        com.google.common.util.concurrent.Futures.addCallback(listenableFuture, new FutureCallback<Integer>() {
             @Override
-            public void onSuccess(Double result) {
+            public void onSuccess(Integer result) {
                 blackhole.consume(result);
             }
 
@@ -94,9 +94,9 @@ public class DirectComputationTest {
 
     @Benchmark
     public static void scalaFuture(Blackhole blackhole) throws ExecutionException, InterruptedException {
-        Future.apply(SCALA_ACTION, EXECUTION_CONTEXT).onComplete(new AbstractFunction1<Try<Double>, Object>() {
+        Future.apply(SCALA_ACTION, EXECUTION_CONTEXT).onComplete(new AbstractFunction1<Try<Integer>, Object>() {
             @Override
-            public Object apply(Try<Double> result) {
+            public Object apply(Try<Integer> result) {
                 blackhole.consume(result);
                 return null;
             }
@@ -105,9 +105,9 @@ public class DirectComputationTest {
 
     @Benchmark
     public static void finagleFuture(Blackhole blackhole) throws ExecutionException, InterruptedException {
-        FUTURE_POOL.apply(SCALA_ACTION).onSuccess(new AbstractFunction1<Double, BoxedUnit>() {
+        FUTURE_POOL.apply(SCALA_ACTION).onSuccess(new AbstractFunction1<Integer, BoxedUnit>() {
             @Override
-            public BoxedUnit apply(Double result) {
+            public BoxedUnit apply(Integer result) {
                 blackhole.consume(result);
                 return null;
             }

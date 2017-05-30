@@ -1,35 +1,32 @@
 package async.benchmark;
 
 import com.twitter.util.Function0;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.infra.Blackhole;
 import rx.Observable;
-
-import java.util.Random;
 
 /**
  *
  */
 public final class Computation {
 
-    private static final Random RANDOM = new Random();
+    @Param({"1024"})
+    public static volatile int param;
 
-    public static double findSumOfRoots() {
-        final int a = RANDOM.nextInt(100),
-                c = RANDOM.nextInt(100),
-                b = 4 * a * c;
-        final double root1 = (b + Math.sqrt(b * b - 4 * a * c)) / (2 * a);
-        final double root2 = (b - Math.sqrt(b * b - 4 * a * c)) / (2 * a);
-        return root1 + root2;
+    public static int compute() {
+        Blackhole.consumeCPU(param);
+        return param;
     }
 
-    public static final Function0<Double> SCALA_ACTION = new Function0<Double>() {
+    public static final Function0<Integer> SCALA_ACTION = new Function0<Integer>() {
         @Override
-        public Double apply() {
-            return findSumOfRoots();
+        public Integer apply() {
+            return compute();
         }
     };
 
-    public static final Observable.OnSubscribe<Double> RX_ACTION = subscriber -> {
-        subscriber.onNext(findSumOfRoots());
+    public static final Observable.OnSubscribe<Integer> RX_ACTION = subscriber -> {
+        subscriber.onNext(compute());
         subscriber.onCompleted();
     };
 }
