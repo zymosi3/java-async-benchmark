@@ -53,7 +53,7 @@ public class ConcurrentComputationTest {
 
     @Setup
     public static void initExecutor() {
-        executor = new ForkJoinPool();
+        executor = Executors.newCachedThreadPool();
         scheduler = Schedulers.from(executor);
         futurePool = new ExecutorServiceFuturePool(executor);
         executionContext = fromExecutor(executor);
