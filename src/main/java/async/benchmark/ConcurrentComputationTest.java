@@ -28,6 +28,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 
 import static akka.dispatch.ExecutionContexts.fromExecutor;
@@ -52,7 +53,7 @@ public class ConcurrentComputationTest {
 
     @Setup
     public static void initExecutor() {
-        executor = Executors.newCachedThreadPool();
+        executor = new ForkJoinPool();
         scheduler = Schedulers.from(executor);
         futurePool = new ExecutorServiceFuturePool(executor);
         executionContext = fromExecutor(executor);
